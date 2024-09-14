@@ -6,10 +6,21 @@ import TaskTable from './components/TaskTable';
 function App() {
   const [tasks, setTasks] = useState([]);
 
-  // Function to handle adding a new task to the list
-  const addTask = (newTask) => {
-    setTasks([...tasks, newTask]);
+  // Function to add a new task
+  const addTask = (task) => {
+    setTasks([...tasks, task]);
   };
+
+  // Function to update an existing task
+  const updateTask = (updatedTask) => {
+    setTasks(tasks.map(task => (task.id === updatedTask.id ? updatedTask : task)));
+  };
+
+  // Function to delete a task
+  const deleteTask = (taskId) => {
+    setTasks(tasks.filter(task => task.id !== taskId));
+  };
+
 
   return (
     <div>

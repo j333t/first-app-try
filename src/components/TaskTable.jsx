@@ -1,29 +1,40 @@
-import { Table, TableRow, TableHeader, TableCell } from 'shadcn-ui';
+import React from 'react';
 
-function TaskTable({ tasks }) {
+function TaskTable({ tasks, onUpdateTask, onDeleteTask }) {
   return (
-    <Table>
+    <table className="min-w-full bg-white">
       <thead>
-        <TableRow>
-          <TableHeader>Task</TableHeader>
-          <TableHeader>Start Date</TableHeader>
-          <TableHeader>End Date</TableHeader>
-          <TableHeader>Assigned To</TableHeader>
-          <TableHeader>Status</TableHeader>
-        </TableRow>
+        <tr>
+          <th className="py-2 px-4 border-b border-gray-200 bg-gray-100">Task Name</th>
+          <th className="py-2 px-4 border-b border-gray-200 bg-gray-100">Start Date</th>
+          <th className="py-2 px-4 border-b border-gray-200 bg-gray-100">End Date</th>
+          <th className="py-2 px-4 border-b border-gray-200 bg-gray-100">Actions</th>
+        </tr>
       </thead>
       <tbody>
-        {tasks.map((task, index) => (
-          <TableRow key={index}>
-            <TableCell>{task.task}</TableCell>
-            <TableCell>{task.startDate}</TableCell>
-            <TableCell>{task.endDate}</TableCell>
-            <TableCell>{task.assignTo}</TableCell>
-            <TableCell>{task.status}</TableCell>
-          </TableRow>
+        {tasks.map((task) => (
+          <tr key={task.id}>
+            <td className="py-2 px-4 border-b border-gray-200">{task.taskName}</td>
+            <td className="py-2 px-4 border-b border-gray-200">{task.startDate}</td>
+            <td className="py-2 px-4 border-b border-gray-200">{task.endDate}</td>
+            <td className="py-2 px-4 border-b border-gray-200">
+              <button
+                className="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-1 px-2 rounded mr-2"
+                onClick={() => onUpdateTask(task)}
+              >
+                Edit
+              </button>
+              <button
+                className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded"
+                onClick={() => onDeleteTask(task.id)}
+              >
+                Delete
+              </button>
+            </td>
+          </tr>
         ))}
       </tbody>
-    </Table>
+    </table>
   );
 }
 

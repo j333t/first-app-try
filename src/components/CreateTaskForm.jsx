@@ -1,80 +1,78 @@
-import { Button, Input, Label, Card, CardHeader, CardBody } from '@shadcn/ui'; 
-import { useState } from 'react';
-import axios from 'axios';
+import React, { useState } from 'react';
+import axios from 'axios';  // Import axios to make API requests
 
 function CreateTaskForm({ onTaskCreated }) {
-  const [task, setTask] = useState('');
+  const [taskName, setTaskName] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-  const [assignTo, setAssignTo] = useState('');
-  const [status, setStatus] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const newTask = { task, startDate, endDate, assignTo, status };
-    
-    // Example axios POST request to create a task
-    axios.post('http://localhost:3001/api/create-task', newTask)
-      .then(response => {
-        console.log('Task created:', response.data);
-        onTaskCreated(response.data);  // Call the passed function to update the task list
-      })
-      .catch(error => {
-        console.error('Error creating task:', error);
-      });
+
+    // Create a new task object for the frontend
+    const newTask = {
+      taskName,
+      startDate,
+      endDate,
+    };
+
+    // Send the task to the backend to insert into BigQuery
+    try {
+      await axios.post('http://localhost:3001/api/data', newTask);
+      console.log('Task added to BigQuery:', newTask);
+
+      // Call the parent function to add the task to the frontend state
+      onTaskCreated(newTask);
+    } catch (error) {
+      console.error('Error adding task to BigQuery:', error);
+    }
+
+    // Clear the form
+    setTaskName('');
+    setStartDate('');
+    setEndDate('');
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <h2>Create New Task</h2>
-      </CardHeader>
-      <CardBody>
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <Label>Task</Label>
-            <Input
-              value={task}
-              onChange={(e) => setTask(e.target.value)}
-              placeholder="Enter task name"
-            />
-          </div>
-          <div className="mb-4">
-            <Label>Start Date</Label>
-            <Input
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-            />
-          </div>
-          <div className="mb-4">
-            <Label>End Date</Label>
-            <Input
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-            />
-          </div>
-          <div className="mb-4">
-            <Label>Assign To</Label>
-            <Input
-              value={assignTo}
-              onChange={(e) => setAssignTo(e.target.value)}
-              placeholder="Assign task to..."
-            />
-          </div>
-          <div className="mb-4">
-            <Label>Status</Label>
-            <Input
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-              placeholder="Task status"
-            />
-          </div>
-          <Button type="submit">Create Task</Button>
-        </form>
-      </CardBody>
-    </Card>
+    <form onSubmit={handleSubmit} className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+      <div className="mb-4">
+        <label className="block text-gray-700 text-sm font-bold mb-2">Task Name</label>
+        <input
+          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700"
+          type="text"
+          placeholder="Task Name"
+          value={taskName}
+          onChange={(e) => setTaskName(e.target.value)}
+        />
+      </div>
+
+      <div className="mb-4">
+        <label className="block text-gray-700 text-sm font-bold mb-2">Start Date</label>
+        <input
+          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700"
+          type="date"
+          value={startDate}
+          onChange={(e) => setStartDate(e.target.value)}
+        />
+      </div>
+
+      <div className="mb-4">
+        <label className="block text-gray-700 text-sm font-bold mb-2">End Date</label>
+        <input
+          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700"
+          type="date"
+          value={endDate}
+          onChange={(e) => setEndDate(e.target.value)}
+        />
+      </div>
+
+      <button
+        type="submit"
+        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+      >
+        Add Task
+      </button>
+    </form>
   );
 }
 
