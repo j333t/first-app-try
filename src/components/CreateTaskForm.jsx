@@ -1,77 +1,125 @@
-import React, { useState } from 'react';
-import axios from 'axios';  // Import axios to make API requests
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 
-function CreateTaskForm({ onTaskCreated }) {
-  const [taskName, setTaskName] = useState('');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+function CreateTaskForm({ onTaskCreated, taskToEdit, onCancelEdit }) {
+  const [key, setKey] = useState(taskToEdit?.key || '');
+  const [taskName, setTaskName] = useState(taskToEdit?.taskName || '');
+  const [startDate, setStartDate] = useState(taskToEdit?.startDate || '');
+  const [endDate, setEndDate] = useState(taskToEdit?.endDate || '');
+  const [assignTo, setAssignTo] = useState(taskToEdit?.assignTo || '');
+  const [status, setStatus] = useState(taskToEdit?.status || '');
+
+  // State to disable/enable submit button
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (taskToEdit) {
+      setKey(taskToEdit.key);
+      setTaskName(taskToEdit.taskName);
+      setStartDate(taskToEdit.startDate);
+      setEndDate(taskToEdit.endDate);
+      setAssignTo(taskToEdit.assignTo);
+      setStatus(taskToEdit.status);
+    }
+  }, [taskToEdit]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Create a new task object for the frontend
+    setIsSubmitting(true);  // Disable the button during submission
+
     const newTask = {
+      key: parseInt(key),  // Ensure key is an integer
       taskName,
       startDate,
       endDate,
+      assignTo,
+      status,
     };
 
-    // Send the task to the backend to insert into BigQuery
     try {
-      await axios.post('http://localhost:3001/api/data', newTask);
-      console.log('Task added to BigQuery:', newTask);
-
-      // Call the parent function to add the task to the frontend state
-      onTaskCreated(newTask);
+      if (taskToEdit) {
+        // Update task
+        await axios.put(`http://localhost:3001/api/data/${taskToEdit.key}`, newTask);
+      } else {
+        // Add new task
+        await axios.post('http://localhost:3001/api/data', newTask);
+        onTaskCreated(newTask);  // Notify App.jsx of the new task
+      }
+      resetForm();
     } catch (error) {
-      console.error('Error adding task to BigQuery:', error);
+      console.error('Error adding/updating task:', error);
+    } finally {
+      setIsSubmitting(false);  // Re-enable the button after submission
     }
+  };
 
-    // Clear the form
+  const resetForm = () => {
+    setKey('');
     setTaskName('');
     setStartDate('');
     setEndDate('');
+    setAssignTo('');
+    setStatus('');
+  };
+
+  const handleCancel = () => {
+    resetForm();
+    onCancelEdit();  // Notify parent component to stop editing mode
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-      <div className="mb-4">
-        <label className="block text-gray-700 text-sm font-bold mb-2">Task Name</label>
-        <input
-          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700"
-          type="text"
-          placeholder="Task Name"
-          value={taskName}
-          onChange={(e) => setTaskName(e.target.value)}
-        />
-      </div>
-
-      <div className="mb-4">
-        <label className="block text-gray-700 text-sm font-bold mb-2">Start Date</label>
-        <input
-          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700"
-          type="date"
-          value={startDate}
-          onChange={(e) => setStartDate(e.target.value)}
-        />
-      </div>
-
-      <div className="mb-4">
-        <label className="block text-gray-700 text-sm font-bold mb-2">End Date</label>
-        <input
-          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700"
-          type="date"
-          value={endDate}
-          onChange={(e) => setEndDate(e.target.value)}
-        />
-      </div>
-
-      <button
-        type="submit"
-        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-      >
-        Add Task
+    <form onSubmit={handleSubmit}>
+      <input
+        value={key}
+        onChange={(e) => setKey(e.target.value)}
+        placeholder="Key"
+        type="number"
+        required
+      />
+      <input
+        value={taskName}
+        onChange={(e) => setTaskName(e.target.value)}
+        placeholder="Task Name"
+        required
+      />
+      <input
+        value={startDate}
+        onChange={(e) => setStartDate(e.target.value)}
+        placeholder="Start Date"
+        type="date"
+        required
+      />
+      <input
+        value={endDate}
+        onChange={(e) => setEndDate(e.target.value)}
+        placeholder="End Date"
+        type="date"
+        required
+      />
+      <input
+        value={assignTo}
+        onChange={(e) => setAssignTo(e.target.value)}
+        placeholder="Assign To"
+        required
+      />
+      <input
+        value={status}
+        onChange={(e) => setStatus(e.target.value)}
+        placeholder="Status"
+        required
+      />
+      
+      {/* Disable the button during submission */}
+      <button type="submit" disabled={isSubmitting}>
+        {taskToEdit ? 'Update Task' : 'Add Task'}
       </button>
+      
+      {taskToEdit && (
+        <button type="button" onClick={handleCancel}>
+          Cancel Update
+        </button>
+      )}
     </form>
   );
 }
