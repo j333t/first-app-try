@@ -6,7 +6,7 @@ import cors from 'cors';
 const app = express();
 
 const bigQueryClient = new BigQuery({
-  keyFilename: 'credentials/boxwood-ellipse-432510-p7-79849f7721a9.json',  // Use forward slashes
+  keyFilename: 'credentials/boxwood-ellipse-432510-p7-1908eb7a8403.json',  // Use forward slashes
   projectId: 'boxwood-ellipse-432510-p7',  // Your Google Cloud project ID
   scopes: ['https://www.googleapis.com/auth/drive']  // Add Google Drive scope
 });

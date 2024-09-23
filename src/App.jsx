@@ -3,6 +3,7 @@ import BigQueryData from './BigQueryData';
 import CreateTaskForm from './components/CreateTaskForm';
 import TaskTable from './components/TaskTable';
 import axios from 'axios';
+import DurationSelector from './components/DurationSelector';
 
 function App() {
   const [tasks, setTasks] = useState([]);
