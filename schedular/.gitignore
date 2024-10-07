@@ -1,6 +1,6 @@
 # Node modules
 node_modules/
-
+server/
 # Build output
 /build
 /dist
