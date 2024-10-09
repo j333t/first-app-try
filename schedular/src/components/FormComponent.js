@@ -14,15 +14,15 @@ const FormComponent = ({ onSubmit, task }) => {
     const [deliverySlot, setDeliverySlot] = useState(null);
     const [personResponsible, setPersonResponsible] = useState('');
     const [numberOfDays, setNumberOfDays] = useState(0);
-
+  
     useEffect(() => {
         if (task) {
             form.setFieldsValue({
-                name: task.name,
+                name: task.Task_Details || '',
             });
-            setStartDate(task.startDate || null);
-            setEndDate(task.endDate || null);
-            setPersonResponsible(task.personResponsible || '');
+            setStartDate(task.Planned_Start_Timestamp ? moment(task.Planned_Start_Timestamp) : null);
+            setEndDate(task.Planned_Delivery_Timestamp ? moment(task.Planned_Delivery_Timestamp) : null);
+            setPersonResponsible(task.Responsibility || '');
         }
     }, [task, form]);
 
@@ -45,7 +45,7 @@ const FormComponent = ({ onSubmit, task }) => {
             const calculatedEndDate = moment(start).add(days - 1, 'days');
             setEndDate(calculatedEndDate);
             setSliderCount(days);
-            setHours({}); // Reset hours when date or days change
+            setHours({});
         } else {
             setEndDate(null);
             setSliderCount(0);
@@ -56,35 +56,58 @@ const FormComponent = ({ onSubmit, task }) => {
         form
             .validateFields()
             .then((values) => {
-                // Calculate total time (sum of all hours from each day)
-                const totalTime = Object.values(hours).reduce((total, value) => total + value, 0);
-
                 const scheduledData = {
-                    ...values,
-                    totalTime, // Total time from sliders
-                    no_of_days_worked: sliderCount,
-                    deliverySlot: deliverySlot,
-                    startDate: startDate,
-                    endDate: endDate,
-                    hours: hours,
-                    personResponsible: personResponsible,
+                    Key: task.Key,
+                    Delivery_code: task.Delivery_code,
+                    DelCode_w_o__: task.Delivery_code,
+                    Step_ID: task.Step_ID,
+                    Task_Details: values.name,
+                    Frequency___Timeline: task.Frequency___Timeline,
+                    Client: task.Client,
+                    Short_description: task.Short_description,
+                    Planned_Start_Timestamp: startDate ? moment(startDate).toISOString() : null,
+                    Planned_Delivery_Timestamp: endDate ? moment(endDate).toISOString() : null,
+                    Responsibility: personResponsible,
+                    Current_Status: task.Current_Status,
+                    Total_Tasks: task.Total_Tasks,
+                    Completed_Tasks: task.Completed_Tasks,
+                    Planned_Tasks: task.Planned_Tasks,
+                    Percent_Tasks_Completed: task.Percent_Tasks_Completed,
+                    Created_at: moment().format('DD/MM/YYYY'),
+                    Updated_at: moment().format('DD/MM/YYYY'),
+                    Time_Left_For_Next_Task_dd_hh_mm_ss: task.Time_Left_For_Next_Task_dd_hh_mm_ss,
+                    Percent_Delivery_Planned: task.Percent_Delivery_Planned,
+                    Card_Corner_Status: task.Card_Corner_Status,
                 };
 
-                onSubmit(scheduledData); // Pass the full data object to parent
-                notification.success({
-                    message: 'Task Updated',
-                    description: 'Your task has been successfully updated!',
-                });
-
-                // Reset form and states after submission
-                form.resetFields();
-                setSliderCount(0);
-                setHours({});
-                setStartDate(null);
-                setEndDate(null);
-                setDeliverySlot(null);
-                setPersonResponsible('');
-                setNumberOfDays(0);
+                // Sending data to server using POST method
+                fetch('http://localhost:3001/api/data', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(scheduledData),
+                })
+                    .then((response) => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(() => {
+                        notification.success({
+                            message: 'Task Updated',
+                            description: 'Your task has been successfully updated!',
+                        });
+                        // Reset form and states after submission
+                       
+                    })
+                    .catch((error) => {
+                        notification.error({
+                            message: 'Error',
+                            description: error.message || 'An error occurred while updating the task.',
+                        });
+                    });
             })
             .catch(() => {
                 notification.error({
@@ -128,7 +151,6 @@ const FormComponent = ({ onSubmit, task }) => {
                 <Input />
             </Form.Item>
 
-            {/* Row for Start Date, Number of Days, and End Date */}
             <Row gutter={[8, 16]}>
                 <Col xs={24} sm={8}>
                     <Form.Item label="Start Date">
@@ -161,7 +183,6 @@ const FormComponent = ({ onSubmit, task }) => {
                 </Col>
             </Row>
 
-            {/* Sliders for each day */}
             {Array.from({ length: sliderCount }).map((_, index) => (
                 <Form.Item key={index} label={`Hours for Day ${index + 1}`}>
                     <Row gutter={20}>
