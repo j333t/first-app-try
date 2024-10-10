@@ -1,4 +1,5 @@
 import React from 'react';
+import Slider from 'react-slick';
 import './HorizontalWheelSelector.css'; // optional CSS for styling
 
 const HorizontalWheelSelector = ({ label, options, onSelect }) => {
