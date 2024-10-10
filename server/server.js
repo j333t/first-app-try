@@ -5,17 +5,16 @@ const path = require('path');
 // Initialize express app
 const app = express();
 
-const keyFilePath = path.join(__dirname, 'stellar-acre-407408-260769a1414c.json');
-
 console.log('Key file path:', keyFilePath);
 
 
 
 const bigQueryClient = new BigQuery({
-  keyFilename: keyFilePath,  // Use forward slashes
+  credentials: JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS),
   projectId: 'stellar-acre-407408',  // Your Google Cloud project ID
   scopes: ['https://www.googleapis.com/auth/drive']  // Add Google Drive scope
 });
+
 
 
 // Middleware setup
