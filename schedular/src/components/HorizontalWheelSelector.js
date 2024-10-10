@@ -1,22 +1,29 @@
 import React from 'react';
 import Slider from 'react-slick';
+import 'slick-carousel/slick/slick.css';
+import 'slick-carousel/slick/slick-theme.css';
+
 import './HorizontalWheelSelector.css'; // optional CSS for styling
 
 const HorizontalWheelSelector = ({ label, options, onSelect }) => {
+  const sliderSettings = {
+    dots: true,
+    infinite: false,
+    speed: 500,
+    slidesToShow: 3,
+    slidesToScroll: 1,
+  };
+
   return (
     <div className="wheel-selector">
       <label className="selector-label">{label}</label>
-      <div className="wheel-container">
+      <Slider {...sliderSettings}>
         {options.map((option, index) => (
-          <button 
-            key={index} 
-            className="wheel-option" 
-            onClick={() => onSelect(option)}
-          >
-            {option}
-          </button>
+          <div key={index} onClick={() => onSelect(option)}>
+            <button className="wheel-option">{option}</button>
+          </div>
         ))}
-      </div>
+      </Slider>
     </div>
   );
 };
