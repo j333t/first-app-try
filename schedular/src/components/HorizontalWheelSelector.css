@@ -1,0 +1,33 @@
+.wheel-selector {
+    margin: 20px 0;
+  }
+  
+  .selector-label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: bold;
+  }
+  
+  .wheel-container {
+    display: flex;
+    overflow-x: auto;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    scroll-behavior: smooth;
+  }
+  
+  .wheel-option {
+    min-width: 70px;
+    margin: 0 5px;
+    padding: 10px;
+    background-color: #f0f0f0;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .wheel-option:hover {
+    background-color: #e0e0e0;
+  }
+  
