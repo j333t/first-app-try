@@ -5,9 +5,12 @@ const path = require('path');
 // Initialize express app
 const app = express();
 
-const keyFilePath = path.join(__dirname, 'stellar-acre-407408-260769a1414c.json');
+const keyFilePath = path.join(__dirname, 'stellar-acre-407408-79ec63b7610a.json');
 
 console.log('Key file path:', keyFilePath);
+
+
+
 
 
 
@@ -16,6 +19,11 @@ const bigQueryClient = new BigQuery({
   projectId: 'stellar-acre-407408',  // Your Google Cloud project ID
   scopes: ['https://www.googleapis.com/auth/drive']  // Add Google Drive scope
 });
+
+
+
+
+
 
 
 // Middleware setup
@@ -84,79 +92,177 @@ app.post('/api/data', async (req, res) => {
     Card_Corner_Status
   } = req.body;
 
-  // Construct the SQL query for insertion
-  const query = `
-    INSERT INTO \`stellar-acre-407408.Scheduler_UI.Components_for_SchedulerUI\` 
-    (Key, Delivery_code, DelCode_w_o__, Step_ID, Task_Details, Frequency___Timeline, Client, Short_description, 
-     Planned_Start_Timestamp, Planned_Delivery_Timestamp, Responsibility, Current_Status, Total_Tasks, 
-     Completed_Tasks, Planned_Tasks, Percent_Tasks_Completed, Created_at, Updated_at, 
-     Time_Left_For_Next_Task_dd_hh_mm_ss, Percent_Delivery_Planned, Card_Corner_Status)
-    VALUES 
-    (@Key, @Delivery_code, @DelCode_w_o__, @Step_ID, @Task_Details, @Frequency___Timeline, @Client, 
-     @Short_description, @Planned_Start_Timestamp, @Planned_Delivery_Timestamp, @Responsibility, 
-     @Current_Status, @Total_Tasks, @Completed_Tasks, @Planned_Tasks, @Percent_Tasks_Completed, 
-     @Created_at, @Updated_at, @Time_Left_For_Next_Task_dd_hh_mm_ss, @Percent_Delivery_Planned, 
-     @Card_Corner_Status)
+  // Query to check if the task already exists
+  const checkQuery = `
+    SELECT Key FROM \`stellar-acre-407408.Scheduler_UI.Components_for_SchedulerUI\`
+    WHERE Key = @Key
   `;
 
-  // Define explicit types for fields that might be null
-  const options = {
-    query: query,
-    params: {
-      Key,
-      Delivery_code,
-      DelCode_w_o__,
-      Step_ID,
-      Task_Details,
-      Frequency___Timeline,
-      Client,
-      Short_description,
-      Planned_Start_Timestamp,
-      Planned_Delivery_Timestamp,
-      Responsibility,
-      Current_Status,
-      Total_Tasks,
-      Completed_Tasks,
-      Planned_Tasks,
-      Percent_Tasks_Completed,
-      Created_at,
-      Updated_at,
-      Time_Left_For_Next_Task_dd_hh_mm_ss,
-      Percent_Delivery_Planned,
-      Card_Corner_Status
-    },
-    types: {
-      Key: 'INT64',
-      Delivery_code: 'STRING',
-      DelCode_w_o__: 'STRING',
-      Step_ID: 'INT64',
-      Task_Details: 'STRING',
-      Frequency___Timeline: 'STRING',
-      Client: 'STRING',
-      Short_description: 'STRING',
-      Planned_Start_Timestamp: 'TIMESTAMP',
-      Planned_Delivery_Timestamp: 'TIMESTAMP',
-      Responsibility: 'STRING',
-      Current_Status: 'STRING',
-      Total_Tasks: 'INT64',
-      Completed_Tasks: 'INT64',
-      Planned_Tasks: 'INT64',
-      Percent_Tasks_Completed: 'FLOAT64',
-      Created_at: 'STRING',
-      Updated_at: 'STRING',
-      Time_Left_For_Next_Task_dd_hh_mm_ss: 'STRING',
-      Percent_Delivery_Planned: 'FLOAT64',
-      Card_Corner_Status: 'STRING',
-    },
+  const checkOptions = {
+    query: checkQuery,
+    params: { Key },
+    types: { Key: 'INT64' }
   };
 
   try {
-    const [job] = await bigQueryClient.createQueryJob(options);
-    await job.getQueryResults();
-    res.status(200).send({ message: 'Task inserted successfully.' });
+    const [existingTasks] = await bigQueryClient.query(checkOptions);
+
+    if (existingTasks.length > 0) {
+      // If task exists, update it
+      const updateQuery = `
+        UPDATE \`stellar-acre-407408.Scheduler_UI.Components_for_SchedulerUI\`
+        SET 
+          Delivery_code = @Delivery_code, 
+          DelCode_w_o__ = @DelCode_w_o__, 
+          Step_ID = @Step_ID, 
+          Task_Details = @Task_Details, 
+          Frequency___Timeline = @Frequency___Timeline, 
+          Client = @Client, 
+          Short_description = @Short_description, 
+          Planned_Start_Timestamp = @Planned_Start_Timestamp, 
+          Planned_Delivery_Timestamp = @Planned_Delivery_Timestamp, 
+          Responsibility = @Responsibility, 
+          Current_Status = @Current_Status, 
+          Total_Tasks = @Total_Tasks, 
+          Completed_Tasks = @Completed_Tasks, 
+          Planned_Tasks = @Planned_Tasks, 
+          Percent_Tasks_Completed = @Percent_Tasks_Completed, 
+          Created_at = @Created_at, 
+          Updated_at = @Updated_at, 
+          Time_Left_For_Next_Task_dd_hh_mm_ss = @Time_Left_For_Next_Task_dd_hh_mm_ss, 
+          Percent_Delivery_Planned = @Percent_Delivery_Planned, 
+          Card_Corner_Status = @Card_Corner_Status
+        WHERE Key = @Key
+      `;
+
+      const updateOptions = {
+        query: updateQuery,
+        params: {
+          Key,
+          Delivery_code,
+          DelCode_w_o__,
+          Step_ID,
+          Task_Details,
+          Frequency___Timeline,
+          Client,
+          Short_description,
+          Planned_Start_Timestamp,
+          Planned_Delivery_Timestamp,
+          Responsibility,
+          Current_Status,
+          Total_Tasks,
+          Completed_Tasks,
+          Planned_Tasks,
+          Percent_Tasks_Completed,
+          Created_at,
+          Updated_at,
+          Time_Left_For_Next_Task_dd_hh_mm_ss,
+          Percent_Delivery_Planned,
+          Card_Corner_Status
+        },
+        types: {
+          Key: 'INT64',
+          Delivery_code: 'STRING',
+          DelCode_w_o__: 'STRING',
+          Step_ID: 'INT64',
+          Task_Details: 'STRING',
+          Frequency___Timeline: 'STRING',
+          Client: 'STRING',
+          Short_description: 'STRING',
+          Planned_Start_Timestamp: 'TIMESTAMP',
+          Planned_Delivery_Timestamp: 'TIMESTAMP',
+          Responsibility: 'STRING',
+          Current_Status: 'STRING',
+          Total_Tasks: 'INT64',
+          Completed_Tasks: 'INT64',
+          Planned_Tasks: 'INT64',
+          Percent_Tasks_Completed: 'FLOAT64',
+          Created_at: 'STRING',
+          Updated_at: 'STRING',
+          Time_Left_For_Next_Task_dd_hh_mm_ss: 'STRING',
+          Percent_Delivery_Planned: 'FLOAT64',
+          Card_Corner_Status: 'STRING',
+        }
+      };
+
+      const [updateJob] = await bigQueryClient.createQueryJob(updateOptions);
+      await updateJob.getQueryResults();
+
+      res.status(200).send({ message: 'Task updated successfully.' });
+    } else {
+      // If task doesn't exist, insert it
+      const insertQuery = `
+        INSERT INTO \`stellar-acre-407408.Scheduler_UI.Components_for_SchedulerUI\` 
+        (Key, Delivery_code, DelCode_w_o__, Step_ID, Task_Details, Frequency___Timeline, Client, Short_description, 
+        Planned_Start_Timestamp, Planned_Delivery_Timestamp, Responsibility, Current_Status, Total_Tasks, 
+        Completed_Tasks, Planned_Tasks, Percent_Tasks_Completed, Created_at, Updated_at, 
+        Time_Left_For_Next_Task_dd_hh_mm_ss, Percent_Delivery_Planned, Card_Corner_Status)
+        VALUES 
+        (@Key, @Delivery_code, @DelCode_w_o__, @Step_ID, @Task_Details, @Frequency___Timeline, @Client, 
+        @Short_description, @Planned_Start_Timestamp, @Planned_Delivery_Timestamp, @Responsibility, 
+        @Current_Status, @Total_Tasks, @Completed_Tasks, @Planned_Tasks, @Percent_Tasks_Completed, 
+        @Created_at, @Updated_at, @Time_Left_For_Next_Task_dd_hh_mm_ss, @Percent_Delivery_Planned, 
+        @Card_Corner_Status)
+      `;
+
+      const insertOptions = {
+        query: insertQuery,
+        params: {
+          Key,
+          Delivery_code,
+          DelCode_w_o__,
+          Step_ID,
+          Task_Details,
+          Frequency___Timeline,
+          Client,
+          Short_description,
+          Planned_Start_Timestamp,
+          Planned_Delivery_Timestamp,
+          Responsibility,
+          Current_Status,
+          Total_Tasks,
+          Completed_Tasks,
+          Planned_Tasks,
+          Percent_Tasks_Completed,
+          Created_at,
+          Updated_at,
+          Time_Left_For_Next_Task_dd_hh_mm_ss,
+          Percent_Delivery_Planned,
+          Card_Corner_Status
+        },
+        types: {
+          Key: 'INT64',
+          Delivery_code: 'STRING',
+          DelCode_w_o__: 'STRING',
+          Step_ID: 'INT64',
+          Task_Details: 'STRING',
+          Frequency___Timeline: 'STRING',
+          Client: 'STRING',
+          Short_description: 'STRING',
+          Planned_Start_Timestamp: 'TIMESTAMP',
+          Planned_Delivery_Timestamp: 'TIMESTAMP',
+          Responsibility: 'STRING',
+          Current_Status: 'STRING',
+          Total_Tasks: 'INT64',
+          Completed_Tasks: 'INT64',
+          Planned_Tasks: 'INT64',
+          Percent_Tasks_Completed: 'FLOAT64',
+          Created_at: 'STRING',
+          Updated_at: 'STRING',
+          Time_Left_For_Next_Task_dd_hh_mm_ss: 'STRING',
+          Percent_Delivery_Planned: 'FLOAT64',
+          Card_Corner_Status: 'STRING',
+        }
+      };
+
+      const [insertJob] = await bigQueryClient.createQueryJob(insertOptions);
+      await insertJob.getQueryResults();
+
+      res.status(200).send({ message: 'Task inserted successfully.' });
+    }
   } catch (error) {
-    console.error('Error inserting data into BigQuery:', error);
-    res.status(500).send({ error: 'Failed to insert task into BigQuery.' });
+    console.error('Error processing task:', error);
+    res.status(500).send({ error: 'Failed to process task.' });
   }
 });
 

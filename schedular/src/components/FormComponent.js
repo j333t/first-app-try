@@ -14,7 +14,7 @@ const FormComponent = ({ onSubmit, task }) => {
     const [deliverySlot, setDeliverySlot] = useState(null);
     const [personResponsible, setPersonResponsible] = useState('');
     const [numberOfDays, setNumberOfDays] = useState(0);
-  
+
     useEffect(() => {
         if (task) {
             form.setFieldsValue({
@@ -23,6 +23,8 @@ const FormComponent = ({ onSubmit, task }) => {
             setStartDate(task.Planned_Start_Timestamp ? moment(task.Planned_Start_Timestamp) : null);
             setEndDate(task.Planned_Delivery_Timestamp ? moment(task.Planned_Delivery_Timestamp) : null);
             setPersonResponsible(task.Responsibility || '');
+            // Assuming totalTime is stored in task.totalTime in minutes
+            setHours(task.totalTime ? { 0: task.totalTime } : {});
         }
     }, [task, form]);
 
@@ -34,9 +36,10 @@ const FormComponent = ({ onSubmit, task }) => {
     };
 
     const handleNumberOfDaysChange = (days) => {
-        setNumberOfDays(days);
-        if (startDate && days) {
-            calculateEndDate(startDate, days);
+        const numericDays = parseInt(days, 10) || 0;
+        setNumberOfDays(numericDays);
+        if (startDate && numericDays) {
+            calculateEndDate(startDate, numericDays);
         }
     };
 
@@ -52,10 +55,15 @@ const FormComponent = ({ onSubmit, task }) => {
         }
     };
 
+    const calculateTotalTime = () => {
+        return Object.values(hours).reduce((acc, curr) => acc + curr, 0);
+    };
+
     const handleSubmit = () => {
         form
             .validateFields()
             .then((values) => {
+                const totalTime = calculateTotalTime();
                 const scheduledData = {
                     Key: task.Key,
                     Delivery_code: task.Delivery_code,
@@ -65,8 +73,8 @@ const FormComponent = ({ onSubmit, task }) => {
                     Frequency___Timeline: task.Frequency___Timeline,
                     Client: task.Client,
                     Short_description: task.Short_description,
-                    Planned_Start_Timestamp: startDate ? moment(startDate).toISOString() : null,
-                    Planned_Delivery_Timestamp: endDate ? moment(endDate).toISOString() : null,
+                    Planned_Start_Timestamp: startDate ? { value: moment(startDate).toISOString() } : null,
+                    Planned_Delivery_Timestamp: endDate ? { value: moment(endDate).toISOString() } : null,
                     Responsibility: personResponsible,
                     Current_Status: task.Current_Status,
                     Total_Tasks: task.Total_Tasks,
@@ -78,8 +86,9 @@ const FormComponent = ({ onSubmit, task }) => {
                     Time_Left_For_Next_Task_dd_hh_mm_ss: task.Time_Left_For_Next_Task_dd_hh_mm_ss,
                     Percent_Delivery_Planned: task.Percent_Delivery_Planned,
                     Card_Corner_Status: task.Card_Corner_Status,
+                    totalTime, // Adding totalTime to scheduledData
                 };
-
+    
                 // Sending data to server using POST method
                 fetch('http://localhost:3001/api/data', {
                     method: 'POST',
@@ -99,8 +108,20 @@ const FormComponent = ({ onSubmit, task }) => {
                             message: 'Task Updated',
                             description: 'Your task has been successfully updated!',
                         });
+                        // Inform the parent component about the update
+                        onSubmit({
+                            personResponsible,
+                            totalTime,
+                            Planned_Delivery_Timestamp: scheduledData.Planned_Delivery_Timestamp,
+                        });
                         // Reset form and states after submission
-                       
+                        form.resetFields();
+                        setStartDate(null);
+                        setEndDate(null);
+                        setNumberOfDays(0);
+                        setSliderCount(0);
+                        setHours({});
+                        setPersonResponsible('');
                     })
                     .catch((error) => {
                         notification.error({
@@ -116,6 +137,7 @@ const FormComponent = ({ onSubmit, task }) => {
                 });
             });
     };
+    
 
     const handleSliderChange = (index, value) => {
         setHours((prev) => ({ ...prev, [index]: value }));
@@ -126,7 +148,10 @@ const FormComponent = ({ onSubmit, task }) => {
         if (isNaN(numericValue)) {
             numericValue = 0;
         }
-        setHours((prev) => ({ ...prev, [index]: numericValue > 480 ? 480 : numericValue < 1 ? 1 : numericValue }));
+        setHours((prev) => ({
+            ...prev,
+            [index]: numericValue > 480 ? 480 : numericValue < 1 ? 1 : numericValue,
+        }));
     };
 
     const customMarks = {
@@ -197,7 +222,7 @@ const FormComponent = ({ onSubmit, task }) => {
                                 tooltip={{ formatter: (value) => `${value} minutes` }}
                             />
                         </Col>
-                        <Col xs={1}>
+                        <Col xs={4}>
                             <Input
                                 type="number"
                                 min={1}
