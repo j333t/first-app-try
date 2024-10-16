@@ -8,7 +8,7 @@
       "src": "schedular/**/*",
       "use": "@vercel/static-build",
       "config": {
-        "distDir": "schedular/build"
+        "distDir": "schedular/dist"
       }
     }
   ],
@@ -19,7 +19,7 @@
     },
     {
       "src": "/(.*)",
-      "dest": "/schedular/build/$1"
+      "dest": "/schedular/dist/$1"
     }
   ]
 }

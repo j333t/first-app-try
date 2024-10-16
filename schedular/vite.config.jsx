@@ -6,7 +6,7 @@ export default defineConfig({
   root: '.',
   plugins: [react()],
   build: {
-    outDir: 'build',
+    outDir: 'dist',
     rollupOptions: {
       input: {
         main: path.resolve(__dirname, 'index.html'),
