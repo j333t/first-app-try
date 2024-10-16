@@ -1,15 +1,25 @@
 {
-    "builds": [
-      {
-        "src": "server/server.js",
-        "use": "@vercel/node"
+  "builds": [
+    {
+      "src": "server/server.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "scheduler/**/*",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "scheduler/dist"
       }
-    ],
-    "routes": [
-      {
-        "src": "/api/(.*)",
-        "dest": "server/server.js"
-      }
-    ]
-  }
-  
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "server/server.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/scheduler/dist/$1"
+    }
+  ]
+}
