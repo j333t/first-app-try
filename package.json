@@ -2,7 +2,11 @@
   "dependencies": {
     "react-slick": "^0.30.2",
     "slick-carousel": "^1.8.1",
-    "vite": "^5.4.8"
+    "vite": "^5.4.8",
+    "@google-cloud/bigquery": "^7.9.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0"
   },
   "scripts": {
     "build": "vite build"

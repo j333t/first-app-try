@@ -81,7 +81,7 @@ const FormComponent = ({ onSubmit, task }) => {
                 };
 
                 // Sending data to server using POST method
-                fetch('http://localhost:3001/api/data', {
+                fetch('/api/data', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

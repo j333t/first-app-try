@@ -1,5 +1,6 @@
 const express = require('express');
 const { BigQuery } = require('@google-cloud/bigquery');
+require('dotenv').config();
 const cors = require('cors');
 const path = require('path');
 // Initialize express app
@@ -32,7 +33,7 @@ app.use(express.json()); // To handle JSON requests+
 // Route to get data from BigQuery
 app.get('/api/data', async (req, res) => {
   try {
-    const query = 'SELECT  * FROM `stellar-acre-407408.Scheduler_UI.Components_for_SchedulerUI` where Client = "Nova Sintech" ';
+    const query = 'SELECT  * FROM `stellar-acre-407408.Scheduler_UI.Components_for_SchedulerUI`';
     const [rows] = await bigQueryClient.query(query);
     console.log('Data fetched from BigQuery:', rows);
 
