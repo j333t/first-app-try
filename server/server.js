@@ -17,17 +17,9 @@ const bigQueryClient = new BigQuery({
 });
 
 
-
 // Middleware setup
 app.use(cors());  // Enable CORS
 app.use(express.json()); // To handle JSON requests+
-
-
-
-
-
-
-
 
 
 // Route to get data from BigQuery
@@ -54,7 +46,7 @@ app.get('/api/data', async (req, res) => {
   }
 });
 
-
+module.exports = app;
 
 // Assuming the correct data is passed from the frontend:
 app.post('/api/data', async (req, res) => {
