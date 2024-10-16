@@ -5,10 +5,10 @@
       "use": "@vercel/node"
     },
     {
-      "src": "scheduler/**/*",
+      "src": "schedular/**/*",
       "use": "@vercel/static-build",
       "config": {
-        "distDir": "scheduler/dist"
+        "distDir": "schedular/build"
       }
     }
   ],
@@ -19,7 +19,7 @@
     },
     {
       "src": "/(.*)",
-      "dest": "/scheduler/dist/$1"
+      "dest": "/schedular/build/$1"
     }
   ]
 }
