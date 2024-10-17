@@ -6,7 +6,13 @@ const path = require('path');
 // Initialize express app
 const app = express();
 
-console.log('Key file path:', keyFilePath);
+const keyFilePath = process.env.GOOGLE_APPLICATION_CREDENTIALS; // This should contain the path to your credentials file
+
+if (keyFilePath) {
+  console.log('Key file path:', keyFilePath);
+} else {
+  console.error('Key file path is not defined. Make sure GOOGLE_APPLICATION_CREDENTIALS is set.');
+}
 
 
 
@@ -23,11 +29,28 @@ app.use(express.json()); // To handle JSON requests+
 
 
 // Route to get data from BigQuery
-app.get('/api/data', (req, res) => {
-  console.log('API endpoint /api/data received a request');
-  res.status(200).json({ message: "Test data response" });
-});
+app.get('/api/data', async (req, res) => {
+  try {
+    const query = 'SELECT  * FROM `stellar-acre-407408.Scheduler_UI.Components_for_SchedulerUI`';
+    const [rows] = await bigQueryClient.query(query);
+    console.log('Data fetched from BigQuery:', rows);
 
+    // Group the data by DelCode_w_o__
+    const groupedData = rows.reduce((acc, item) => {
+      const key = item.DelCode_w_o__;
+      if (!acc[key]) {
+        acc[key] = [];
+      }
+      acc[key].push(item);
+      return acc;
+    }, {});
+
+    res.status(200).json(groupedData);
+  } catch (err) {
+    console.error('Error querying BigQuery:', err.message, err.stack);  // Detailed error logging
+    res.status(500).json({ message: err.message, stack: err.stack });
+  }
+});
 
 module.exports = app;
 
