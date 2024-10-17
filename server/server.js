@@ -31,7 +31,7 @@ app.use(express.json()); // To handle JSON requests+
 // Route to get data from BigQuery
 app.get('/api/data', async (req, res) => {
   try {
-    const query = 'SELECT  * FROM `stellar-acre-407408.Scheduler_UI.Components_for_SchedulerUI`';
+    const query = 'SELECT  * FROM `stellar-acre-407408.Scheduler_UI.Components_for_SchedulerUI` LIMIT 1000';
     const [rows] = await bigQueryClient.query(query);
     console.log('Data fetched from BigQuery:', rows);
 
